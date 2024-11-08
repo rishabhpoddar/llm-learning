@@ -2,14 +2,17 @@ import re
 from tokenzer_interface import Tokenizer
 
 
-class SimpleTokenizerV1(Tokenizer):
+class SimpleTokenizer(Tokenizer):
     def __init__(self, vocab):
         self.str_to_int = vocab
         self.int_to_str = {v: k for k, v in vocab.items()}
 
     def encode(self, text):
         preprocessed = get_tokens_from_text(text)
-        ids = [self.str_to_int[item] for item in preprocessed]
+        ids = [
+            self.str_to_int.get(item, self.str_to_int["<|unk|>"])
+            for item in preprocessed
+        ]
         return ids
 
     def decode(self, ids):
@@ -24,9 +27,13 @@ def get_tokenizer(text):
     preprocessed = get_tokens_from_text(text)
     # then we get the unique tokens
     vocab = sorted(list(set(preprocessed)))
+    # add special tokens:
+    # endoftext is used to add a breakpoint between two independent texts (like 2 books).
+    # unk is used for unknown tokens that might be passed to the encode function which is not a part of the vocab.
+    vocab.extend(["<|endoftext|>", "<|unk|>"])
     # then we convert them to ids
     vocab_to_int = {token: i for i, token in enumerate(vocab)}
-    return SimpleTokenizerV1(vocab_to_int)
+    return SimpleTokenizer(vocab_to_int)
 
 
 def get_tokens_from_text(text):
