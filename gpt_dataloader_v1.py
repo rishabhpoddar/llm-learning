@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from byte_pair_encoding_tokenizer import get_tokenizer
+from token_embedding import TokenEmbedding
 
 
 class GPTDatasetV1(Dataset):
@@ -8,6 +9,7 @@ class GPTDatasetV1(Dataset):
         self.tokenizer = tokenizer
         self.input_ids = []
         self.target_ids = []
+        self.token_embedding = TokenEmbedding(tokenizer.vocab_size, 256, max_length)
 
         token_ids = tokenizer.encode(txt)
         for i in range(0, len(token_ids) - max_length, stride):
@@ -20,7 +22,9 @@ class GPTDatasetV1(Dataset):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
-        return self.input_ids[idx], self.target_ids[idx]
+        return self.token_embedding.get_embeddings(
+            self.input_ids[idx]
+        ), self.token_embedding.get_embeddings(self.target_ids[idx])
 
 
 def create_data_loader(

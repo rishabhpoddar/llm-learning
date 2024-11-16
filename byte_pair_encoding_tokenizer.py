@@ -13,6 +13,7 @@ class BPETokenizer(Tokenizer):
             key=lambda x: -1 * len(x)
         )  # -1 cause we want longest first
         self.int_to_str = {v: k for k, v in vocab.items()}
+        self.vocab_size = len(vocab)
 
     def encode(self, text):
         if text == "":
