@@ -26,7 +26,9 @@ class CausalAttention(nn.Module):
             self.mask.bool()[:num_tokens, :num_tokens], -torch.inf
         )  # `:num_tokens` to account for cases where the number of tokens in the batch is smaller than the supported context_size
         attn_weights = torch.softmax(attn_scores / keys.shape[-1] ** 0.5, dim=-1)
-        attn_weights = self.dropout(attn_weights)  # New
+        attn_weights = self.dropout(
+            attn_weights
+        )  # This randomly sets certain values in the matrix to 0, and scales the other values by 1/dropout.
 
         context_vec = attn_weights @ values
         return context_vec
